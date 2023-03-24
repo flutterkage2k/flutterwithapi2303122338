@@ -30,7 +30,7 @@ class MainDrawer extends StatelessWidget {
       backgroundColor: darkColor,
       child: ListView(
         children: [
-          DrawerHeader(
+          const DrawerHeader(
             child: Text(
               '지역 선택',
               style: TextStyle(color: Colors.white, fontSize: 20.0),

@@ -6,7 +6,7 @@ class MainAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ts = TextStyle(
+    const ts = TextStyle(
       color: Colors.white,
       fontSize: 30.0,
     );
@@ -17,7 +17,7 @@ class MainAppBar extends StatelessWidget {
       flexibleSpace: FlexibleSpaceBar(
           background: SafeArea(
         child: Container(
-          margin: EdgeInsets.only(top: kToolbarHeight),
+          margin: const EdgeInsets.only(top: kToolbarHeight),
           child: Column(
             children: [
               Text(
