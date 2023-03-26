@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterwithapi2303122338/component/card_title.dart';
 import 'package:flutterwithapi2303122338/component/category_card.dart';
@@ -5,11 +6,40 @@ import 'package:flutterwithapi2303122338/component/main_app_bar.dart';
 import 'package:flutterwithapi2303122338/component/main_card.dart';
 import 'package:flutterwithapi2303122338/component/main_drawer.dart';
 import 'package:flutterwithapi2303122338/const/colors.dart';
+import 'package:flutterwithapi2303122338/const/data.dart';
 
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    fetchData(); // homescreen이 한번 실행될때만 실행됨.
+  }
+
+  fetchData() async {
+    final response = await Dio().get(
+      'http://apis.data.go.kr/B552584/ArpltnStatsSvc/getCtprvnMesureLIst',
+      queryParameters: {
+        'serviceKey': serviceKey,
+        'returnType': 'json',
+        'numOfRows': 30,
+        'pageNo': 1,
+        'itemCode': 'PM10',
+        'dataGubun': 'HOUR',
+        'searchCondition': 'WEEK',
+      },
+    );
+    print(response.data);
+  }
 
   @override
   Widget build(BuildContext context) {
