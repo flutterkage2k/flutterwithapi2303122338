@@ -7,6 +7,7 @@ import 'package:flutterwithapi2303122338/component/main_card.dart';
 import 'package:flutterwithapi2303122338/component/main_drawer.dart';
 import 'package:flutterwithapi2303122338/const/colors.dart';
 import 'package:flutterwithapi2303122338/const/data.dart';
+import 'package:flutterwithapi2303122338/model/stat_model.dart';
 
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
@@ -38,7 +39,11 @@ class _HomeScreenState extends State<HomeScreen> {
         'searchCondition': 'WEEK',
       },
     );
-    print(response.data);
+
+    print(response.data['response']['body']['items'].map(
+          (item) => StatModel.fromJson(json: item),
+    ),
+    );
   }
 
   @override
