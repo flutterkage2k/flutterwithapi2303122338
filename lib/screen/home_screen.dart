@@ -8,6 +8,7 @@ import 'package:flutterwithapi2303122338/component/main_drawer.dart';
 import 'package:flutterwithapi2303122338/const/colors.dart';
 import 'package:flutterwithapi2303122338/const/data.dart';
 import 'package:flutterwithapi2303122338/model/stat_model.dart';
+import 'package:flutterwithapi2303122338/repository/stat_repository.dart';
 
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
@@ -27,23 +28,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   fetchData() async {
-    final response = await Dio().get(
-      'http://apis.data.go.kr/B552584/ArpltnStatsSvc/getCtprvnMesureLIst',
-      queryParameters: {
-        'serviceKey': serviceKey,
-        'returnType': 'json',
-        'numOfRows': 30,
-        'pageNo': 1,
-        'itemCode': 'PM10',
-        'dataGubun': 'HOUR',
-        'searchCondition': 'WEEK',
-      },
-    );
+    final statModels = await StatRepository.fetchData();
 
-    print(response.data['response']['body']['items'].map(
-          (item) => StatModel.fromJson(json: item),
-    ),
-    );
+    print(statModels);
   }
 
   @override
