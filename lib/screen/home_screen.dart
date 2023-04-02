@@ -22,13 +22,30 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  Future<Map<ItemCode, List<StatModel>>> fetchData() async {
+    Map<ItemCode, List<StatModel>> stats = {};
 
+    List<Future> futures = [];
 
-  Future<List<StatModel>> fetchData() async {
-    final statModels = await StatRepository.fetchData();
+    for (ItemCode itemCode in ItemCode.values) {
+      futures.add(
+        StatRepository.fetchData(
+          itemCode: itemCode,
+        ),
+      );
+    }
+    final results = await Future.wait(futures);
 
-    return statModels;
+    for(int i = 0; i< results.length; i ++){
+      final key = ItemCode.values[i];
+      final value = results[i];
 
+      stats.addAll({
+        key: value,
+      });
+    }
+
+    return stats;
   }
 
   @override
@@ -36,87 +53,91 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: primaryColor,
       drawer: MainDrawer(),
-      body: FutureBuilder<List<StatModel>>(
-        future: fetchData(),
-        builder: (context,snapshot) {
-          if(snapshot.hasError) {
-            return Center(child: Text('Error'),);
-          }
-          if(!snapshot.hasData){
-            return Center(child: CircularProgressIndicator(),);
-          }
-          List<StatModel> stats = snapshot.data!;
+      body: FutureBuilder<Map<ItemCode, List<StatModel>>>(
+          future: fetchData(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(
+                child: Text('Error'),
+              );
+            }
+            if (!snapshot.hasData) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            Map<ItemCode, List<StatModel>> stats = snapshot.data!;
 
-          StatModel recentStat = stats[0];
+            StatModel pm10RecentStat = stats[ItemCode.PM10]![0];
 
-          final status = DataUtils.getStatusFromItemCodeAndValue(value: recentStat.seoul, itemCode: ItemCode.PM10,);
+            final status = DataUtils.getStatusFromItemCodeAndValue(
+              value: pm10RecentStat.seoul,
+              itemCode: ItemCode.PM10,
+            );
 
-
-
-          return CustomScrollView(
-            slivers: [
-              MainAppBar(
-                stat: recentStat,
-                status: status ,
-              ),
-              SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    CategoryCard(),
-                    const SizedBox(
-                      height: 16.0,
-                    ),
-                    MainCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          CardTitle(
-                            title: '시간별 미세먼지',
-                          ),
-                          Column(
-                            children: List.generate(
-                              24,
-                              (index) {
-                                final now = DateTime.now();
-                                final hour = now.hour;
-                                int currentHour = hour - index;
-
-                                if (currentHour < 0) {
-                                  currentHour += 24;
-                                }
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                                  child: Row(
-                                    children: [
-                                      Expanded(child: Text('$currentHour시')),
-                                      Expanded(
-                                        child: Image.asset(
-                                          'asset/img/good.png',
-                                          height: 20.0,
-                                        ),
-                                      ),
-                                      Expanded(
-                                          child: Text(
-                                        '좋음',
-                                        textAlign: TextAlign.right,
-                                      )),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          )
-                        ],
-                      ),
-                    )
-                  ],
+            return CustomScrollView(
+              slivers: [
+                MainAppBar(
+                  stat: pm10RecentStat,
+                  status: status,
                 ),
-              )
-            ],
-          );
-        }
-      ),
+                SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      CategoryCard(),
+                      const SizedBox(
+                        height: 16.0,
+                      ),
+                      MainCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            CardTitle(
+                              title: '시간별 미세먼지',
+                            ),
+                            Column(
+                              children: List.generate(
+                                24,
+                                (index) {
+                                  final now = DateTime.now();
+                                  final hour = now.hour;
+                                  int currentHour = hour - index;
+
+                                  if (currentHour < 0) {
+                                    currentHour += 24;
+                                  }
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                    child: Row(
+                                      children: [
+                                        Expanded(child: Text('$currentHour시')),
+                                        Expanded(
+                                          child: Image.asset(
+                                            'asset/img/good.png',
+                                            height: 20.0,
+                                          ),
+                                        ),
+                                        Expanded(
+                                            child: Text(
+                                          '좋음',
+                                          textAlign: TextAlign.right,
+                                        )),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              ],
+            );
+          }),
     );
   }
 }
