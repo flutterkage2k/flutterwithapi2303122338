@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+// class 는 설계도 일뿐이다.
+
+
+
 class StatusModel {
   //단계
 
@@ -25,7 +29,9 @@ class StatusModel {
 
   final double minO3;
 
-  final double minO2;
+
+
+  final double minNO2;
 
   final double minCO;
 
@@ -43,7 +49,7 @@ class StatusModel {
     required this.minFineDust,
     required this.minUltraFineDust,
     required this.minO3,
-    required this.minO2,
+    required this.minNO2,
     required this.minCO,
     required this.minSO2,
   });
