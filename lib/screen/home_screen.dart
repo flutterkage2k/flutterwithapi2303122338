@@ -2,12 +2,15 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterwithapi2303122338/component/card_title.dart';
 import 'package:flutterwithapi2303122338/component/category_card.dart';
+import 'package:flutterwithapi2303122338/component/hourly_card.dart';
 import 'package:flutterwithapi2303122338/component/main_app_bar.dart';
 import 'package:flutterwithapi2303122338/component/main_card.dart';
 import 'package:flutterwithapi2303122338/component/main_drawer.dart';
 import 'package:flutterwithapi2303122338/const/colors.dart';
 import 'package:flutterwithapi2303122338/const/data.dart';
+import 'package:flutterwithapi2303122338/const/regions.dart';
 import 'package:flutterwithapi2303122338/const/status_level.dart';
+import 'package:flutterwithapi2303122338/model/stat_and_status_model.dart';
 import 'package:flutterwithapi2303122338/model/stat_model.dart';
 import 'package:flutterwithapi2303122338/repository/stat_repository.dart';
 import 'package:flutterwithapi2303122338/utils/data_utils.dart';
@@ -22,6 +25,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String region = regions[0]; // 서울일것이다.
+
+
+  bool isExpanded = true;
+
+  ScrollController scrollController = ScrollController();
+
   Future<Map<ItemCode, List<StatModel>>> fetchData() async {
     Map<ItemCode, List<StatModel>> stats = {};
 
@@ -36,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     final results = await Future.wait(futures);
 
-    for(int i = 0; i< results.length; i ++){
+    for (int i = 0; i < results.length; i++) {
       final key = ItemCode.values[i];
       final value = results[i];
 
@@ -48,11 +58,23 @@ class _HomeScreenState extends State<HomeScreen> {
     return stats;
   }
 
+  scrollListender() {
+    bool isExpanded = scrollController.offset()
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: primaryColor,
-      drawer: MainDrawer(),
+      drawer: MainDrawer(
+        selectedRegion: region,
+        onRegionTap: (String region) {
+          setState(() {
+            this.region = region;
+          });
+          Navigator.of(context).pop();
+        },
+      ),
       body: FutureBuilder<Map<ItemCode, List<StatModel>>>(
           future: fetchData(),
           builder: (context, snapshot) {
@@ -75,67 +97,69 @@ class _HomeScreenState extends State<HomeScreen> {
               itemCode: ItemCode.PM10,
             );
 
-            return CustomScrollView(
-              slivers: [
-                MainAppBar(
-                  stat: pm10RecentStat,
-                  status: status,
-                ),
-                SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      CategoryCard(),
-                      const SizedBox(
-                        height: 16.0,
-                      ),
-                      MainCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            CardTitle(
-                              title: '시간별 미세먼지',
-                            ),
-                            Column(
-                              children: List.generate(
-                                24,
-                                (index) {
-                                  final now = DateTime.now();
-                                  final hour = now.hour;
-                                  int currentHour = hour - index;
+            final ssModel = stats.keys.map((key) {
+              final value = stats[key]!;
+              final stat = value[0];
 
-                                  if (currentHour < 0) {
-                                    currentHour += 24;
-                                  }
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                                    child: Row(
-                                      children: [
-                                        Expanded(child: Text('$currentHour시')),
-                                        Expanded(
-                                          child: Image.asset(
-                                            'asset/img/good.png',
-                                            height: 20.0,
-                                          ),
-                                        ),
-                                        Expanded(
-                                            child: Text(
-                                          '좋음',
-                                          textAlign: TextAlign.right,
-                                        )),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                            )
-                          ],
-                        ),
-                      )
-                    ],
+              return StatAndStatusModel(
+                itemCode: key,
+                status: DataUtils.getStatusFromItemCodeAndValue(
+                  value: stat.getLevelFromRegion(region),
+                  itemCode: key,
+                ),
+                stat: stat,
+              );
+            }).toList();
+
+            return Container(
+              color: status.primaryColor,
+              child: CustomScrollView(
+                controller: scrollController,
+                slivers: [
+                  MainAppBar(
+                    isExpanded: true,
+                    dateTime: pm10RecentStat.dataTime,
+                    region: region,
+                    stat: pm10RecentStat,
+                    status: status,
                   ),
-                )
-              ],
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        CategoryCard(
+                          region: region,
+                          models: ssModel,
+                          darkColor: status.darkColor,
+                          lightColor: status.lightColor,
+                        ),
+                        const SizedBox(
+                          height: 16.0,
+                        ),
+                        ...stats.keys.map((itemCode) {
+                          final stat = stats[itemCode]!;
+
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: HourlyCard(
+                              darkColor: status.darkColor,
+                              lightColor: status.lightColor,
+                              category: DataUtils.getItemCodeKrString(
+                                itemCode: itemCode,
+                              ),
+                              stats: stat,
+                              region: region,
+                            ),
+                          );
+                        }).toList(),
+                        const SizedBox(
+                          height: 16.0,
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
             );
           }),
     );

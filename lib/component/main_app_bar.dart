@@ -5,11 +5,20 @@ import 'package:flutterwithapi2303122338/model/status_model.dart';
 import 'package:flutterwithapi2303122338/utils/data_utils.dart';
 
 class MainAppBar extends StatelessWidget {
-
+  final String region;
   final StatusModel status;
   final StatModel stat;
+  final DateTime dateTime;
+  final bool isExpanded;
 
-  const MainAppBar({super.key, required this.status, required this.stat});
+  const MainAppBar({
+    super.key,
+    required this.status,
+    required this.stat,
+    required this.region,
+    required this.dateTime,
+    required this.isExpanded,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +29,9 @@ class MainAppBar extends StatelessWidget {
 
     return SliverAppBar(
       backgroundColor: status.primaryColor,
+      pinned: true, //appbar 살리기
+      title: isExpanded ? null : Text('$region ${DataUtils.getTimeFromDateTime(dateTime: dateTime)}'),
+      centerTitle: true,
       expandedHeight: 500,
       flexibleSpace: FlexibleSpaceBar(
           background: SafeArea(
@@ -28,14 +40,14 @@ class MainAppBar extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                '서울',
+                region,
                 style: ts.copyWith(
                   fontSize: 40.0,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               Text(
-               DataUtils.getTimeFromDateTime(dateTime: stat.dataTime),
+                DataUtils.getTimeFromDateTime(dateTime: stat.dataTime),
                 style: ts.copyWith(
                   fontSize: 20.0,
                 ),
@@ -67,5 +79,4 @@ class MainAppBar extends StatelessWidget {
       )),
     );
   }
-
 }
