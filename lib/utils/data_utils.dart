@@ -32,7 +32,6 @@ class DataUtils {
     switch (itemCode) {
       case ItemCode.PM10:
         return '미세먼지';
-
       case ItemCode.PM25:
         return '초미세먼지';
       case ItemCode.NO2:
